@@ -1,6 +1,8 @@
 import { Router } from 'express';
+import { getCustomRepository } from 'typeorm';
 
-// import TransactionsRepository from '../repositories/TransactionsRepository';
+import sanitizeTransaction from '../utils/SanitizeTransaction';
+import TransactionsRepository from '../repositories/TransactionsRepository';
 import CreateTransactionService from '../services/CreateTransactionService';
 // import DeleteTransactionService from '../services/DeleteTransactionService';
 // import ImportTransactionsService from '../services/ImportTransactionsService';
@@ -8,7 +10,16 @@ import CreateTransactionService from '../services/CreateTransactionService';
 const transactionsRouter = Router();
 
 transactionsRouter.get('/', async (request, response) => {
-  // TODO
+  const transactionRepository = getCustomRepository(TransactionsRepository);
+  const rawTransactions = await transactionRepository.find();
+
+  const transactions = rawTransactions.map(transaction =>
+    sanitizeTransaction(transaction),
+  );
+
+  const balance = await transactionRepository.getBalance(transactions);
+
+  response.json({ transactions, balance });
 });
 
 transactionsRouter.post('/', async (request, response) => {
@@ -22,12 +33,9 @@ transactionsRouter.post('/', async (request, response) => {
     category,
   });
 
-  delete transaction.created_at;
-  delete transaction.updated_at;
-  delete transaction.category.created_at;
-  delete transaction.category.updated_at;
+  const cleanedTransaction = sanitizeTransaction(transaction);
 
-  return response.json(transaction);
+  return response.json(cleanedTransaction);
 });
 
 transactionsRouter.delete('/:id', async (request, response) => {
