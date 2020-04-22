@@ -5,7 +5,7 @@ interface Request {
   categoryTitle: string;
 }
 
-class GetCategoryService {
+class CreateCategoryService {
   public async execute({ categoryTitle }: Request): Promise<Category> {
     // if a category doesn't exist, create
     const categoryRepository = getRepository(Category);
@@ -22,10 +22,18 @@ class GetCategoryService {
       title: categoryTitle,
     });
 
-    await categoryRepository.save(newCategory);
+    try {
+      await categoryRepository.save(newCategory);
+    } catch (err) {
+      // const foundCategory = await categoryRepository.findOne({
+      //   where: { title: categoryTitle },
+      // });
+      // return foundCategory;
+      // this.execute({ categoryTitle });
+    }
 
     return newCategory;
   }
 }
 
-export default GetCategoryService;
+export default CreateCategoryService;

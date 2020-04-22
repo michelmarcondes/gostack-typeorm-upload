@@ -1,7 +1,7 @@
 import { getCustomRepository } from 'typeorm';
 import AppError from '../errors/AppError';
 
-import GetCategoryService from './GetCategoryService';
+import CreateCategoryService from './CreateCategoryService';
 import TransactionRepository from '../repositories/TransactionsRepository';
 import sanitizeTransaction from '../utils/SanitizeTransaction';
 
@@ -12,6 +12,7 @@ interface Request {
   value: number;
   type: 'income' | 'outcome';
   category: string;
+  importFile?: boolean;
 }
 
 class CreateTransactionService {
@@ -20,9 +21,10 @@ class CreateTransactionService {
     value,
     type,
     category,
+    importFile,
   }: Request): Promise<Transaction> {
     // get category
-    const categoryService = new GetCategoryService();
+    const categoryService = new CreateCategoryService();
     const persistedCategory = await categoryService.execute({
       categoryTitle: category,
     });
@@ -41,7 +43,7 @@ class CreateTransactionService {
 
     const { total } = await transactionRepository.getBalance(transactions);
 
-    if (type === 'outcome' && total - value < 0) {
+    if (!importFile && type === 'outcome' && total - value < 0) {
       throw new AppError('Not enough money.');
     }
 
