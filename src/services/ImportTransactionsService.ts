@@ -1,5 +1,6 @@
 import parser from 'csvtojson';
 import path from 'path';
+import fs from 'fs';
 
 import AppError from '../errors/AppError';
 
@@ -40,7 +41,10 @@ class ImportTransactionsService {
     );
 
     // delete tmp file
-    // TO DO
+    const csvFileExists = await fs.promises.stat(importFilePath);
+    if (csvFileExists) {
+      await fs.promises.unlink(importFilePath);
+    }
     return transactions;
   }
 
