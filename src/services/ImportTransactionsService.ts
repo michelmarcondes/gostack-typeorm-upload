@@ -26,7 +26,6 @@ class ImportTransactionsService {
     const importFilePath = path.join(uploadConfig.directory, filename);
 
     const parsedData = await parser().fromFile(importFilePath);
-    // console.log(parsedData);
 
     const transactions = Promise.all(
       parsedData.map(async current => {
